@@ -1,63 +1,60 @@
 
-CREATE TABLE product_daily
-CREATE TABLE product_weekly
-  COMMENT ON COLUMN product.sales_growth_week IS '销量增长率-按周';
-  COMMENT ON COLUMN product.revenue_1 IS '最近1天销售额';
+-- CREATE TABLE product_daily
+-- CREATE TABLE product_weekly
+--   COMMENT ON COLUMN product.sales_growth_week IS '销量增长率-按周';
+--   COMMENT ON COLUMN product.revenue_1 IS '最近1天销售额';
 
-CREATE TABLE product_monthly
-
-
+-- CREATE TABLE product_monthly
 
 
 CREATE TABLE product (
   product_id bigint PRIMARY KEY NOT NULL,
-  uri text NOT NULL,
-  name text NOT NULL,
-  image_url text NOT NULL,
-  brand text,
+  uri        text NOT NULL,
+  name       text NOT NULL,
+  image_url  text NOT NULL,
+  brand      text,
+  is_oversea bool NOT NULL,
+  variations int  NOT NULL,
 
   catetory_path_name text NOT NULL,
-  catetory_path_en text NOT NULL,
-  catetory_path_id text NOT NULL,
+  catetory_path_en   text NOT NULL,
+  catetory_path_id   text NOT NULL,
 
-  is_oversea bool DEFAULT NULL,
-  variations int(3) DEFAULT NULL,
-
-  shop_id int(10) DEFAULT NULL,
-  shop_owner text DEFAULT NULL,
-  shop_name text DEFAULT NULL,
-  location text DEFAULT NULL,
+  shop_id    int  NOT NULL,
+  shop_owner text NOT NULL,
+  shop_name  text NOT NULL,
+  location   text NOT NULL,
   
-  selling_start date DEFAULT NULL,
-  status char(1) DEFAULT NULL,
-  preferred char(1) DEFAULT NULL,
-  min_price float(10,2) DEFAULT NULL,
-  max_price float(10,2) DEFAULT NULL,
-  discount text DEFAULT NULL,
+  status char(1) NOT NULL,
+  preferred bool NOT NULL,
+  min_price decimal(10,2) NOT NULL,
+  max_price decimal(10,2) NOT NULL,
+  discount int NOT NULL,
 
-  sales_total int(8) DEFAULT NULL,
-  sales_30 int(8) DEFAULT NULL,
-  sales_7 int(8) DEFAULT NULL,
-  sales_growth_30 float(8,2) DEFAULT NULL,
+  sales_total int(8) NOT NULL,
+  sales_30 int(8) NOT NULL,
+  sales_7 int(8) NOT NULL,
+  sales_growth_30 float(8,2) NOT NULL,
 
   sales_trend_day jsonb NOT NULL,
   sales_trend_month jsonb NOT NULL,
 
-  revenue_30 float(10,2) NOT NULL,
-  revenue_7 float(10,2) NOT NULL,
-  revenue_growth_30 float(10,2) NOT NULL,
+  revenue_30 decimal(7,3) NOT NULL,
+  revenue_7 decimal(7,3) NOT NULL,
+  revenue_growth_30 decimal(7,3) NOT NULL,
   
-  rating float(3,2) DEFAULT NULL,
-  reviews_total int(8) DEFAULT NULL,
-  reviews_30 int(8) DEFAULT NULL,
-  reviews_7 int(8) DEFAULT NULL,
-  likes_total int(8) DEFAULT NULL,
-  likes_30 int(8) DEFAULT NULL,
-  likes_7 int(8) DEFAULT NULL,
-  stock int(8) DEFAULT NULL,
-  created_time datetime NOT NULL,
-  updated_time datetime DEFAULT NULL,
-  UNIQUE (country, product_id)
+  rating float(3,2) NOT NULL,
+  reviews_total int(8) NOT NULL,
+  reviews_30 int(8) NOT NULL,
+  reviews_7 int(8) NOT NULL,
+  likes_total int(8) NOT NULL,
+  likes_30 int(8) NOT NULL,
+  likes_7 int(8) NOT NULL,
+  stock int(8) NOT NULL,
+
+  selling_start timestamptz NOT NULL,
+  created_time  timestamptz NOT NULL,
+  updated_time  timestamptz NOT NULL
 );
 
 COMMENT ON TABLE product IS '商品信息';
@@ -87,7 +84,7 @@ COMMENT ON COLUMN product.preferred IS '是否属于虾皮优选，Y-属于，N-
 
 COMMENT ON COLUMN product.min_price IS '折后最低售价(该国货币)';
 COMMENT ON COLUMN product.max_price IS '折后最高售价(该国货币)';
-COMMENT ON COLUMN product.discount IS '折扣，如：7折';
+COMMENT ON COLUMN product.discount IS '折扣，如：7折(0~100)';
 
 COMMENT ON COLUMN product.sales_total IS '累计总销量';
 COMMENT ON COLUMN product.sales_30 IS '最近30天销量';
