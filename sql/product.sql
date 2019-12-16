@@ -24,20 +24,20 @@ CREATE TYPE country_type AS ENUM (
 );
 
 CREATE TABLE product (
-  product_id bigint PRIMARY KEY NOT NULL,
-  country    country_type NOT NULL,
-  uri        text NOT NULL,
-  name       text NOT NULL,
-  image_url  text NOT NULL,
-  brand      text,
-  is_oversea bool NOT NULL,
-  variations int  NOT NULL,
-  status product_status NOT NULL,
-  preferred bool NOT NULL,
+  product_id bigint        NOT NULL,
+  country    country_type  NOT NULL,
+  uri        text          NOT NULL,
+  name       text          NOT NULL,
+  image_url  text          NOT NULL,
+  brand      text                  ,
+  is_oversea bool          NOT NULL,
+  variations int           NOT NULL,
+  status    product_status NOT NULL,
+  preferred bool           NOT NULL,
   min_price decimal(10, 2) NOT NULL,
   max_price decimal(10, 2) NOT NULL,
-  discount int NOT NULL,
-  stock int NOT NULL,
+  discount  int            NOT NULL,
+  stock     int            NOT NULL,
 
   catetory_path_name text NOT NULL,
   catetory_path_en   text NOT NULL,
@@ -48,21 +48,21 @@ CREATE TABLE product (
   shop_name  text NOT NULL,
   location   text NOT NULL,
   
-  sales_total       int NOT NULL,
-  sales_30          int NOT NULL,
-  sales_7           int NOT NULL,
-  sales_growth_30   int NOT NULL,
+  sales_total       int   NOT NULL,
+  sales_30          int   NOT NULL,
+  sales_7           int   NOT NULL,
+  sales_growth_30   int   NOT NULL,
   sales_trend_30    int[] NOT NULL,
   sales_trend_month int[] NOT NULL,
 
   revenue_30        decimal(10,2) NOT NULL,
   revenue_7         decimal(10,2) NOT NULL,
-  revenue_growth_30 int NOT NULL,
+  revenue_growth_30 int           NOT NULL,
   
   rating        decimal(3,2) NOT NULL,
-  reviews_total int NOT NULL,
-  reviews_30    int NOT NULL,
-  reviews_7     int NOT NULL,
+  reviews_total int          NOT NULL,
+  reviews_30    int          NOT NULL,
+  reviews_7     int          NOT NULL,
 
   likes_total   int NOT NULL,
   likes_30      int NOT NULL,
@@ -70,7 +70,8 @@ CREATE TABLE product (
 
   selling_start timestamptz NOT NULL,
   create_time   timestamptz NOT NULL,
-  update_time   timestamptz NOT NULL
+  update_time   timestamptz NOT NULL,
+  UNIQUE('country', 'product_id')
 );
 
 COMMENT ON TABLE product IS '商品信息';
