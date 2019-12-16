@@ -8,9 +8,9 @@
 
 
 CREATE TYPE product_status AS ENUM (
-  'available', -- 已上架Available
-  'unavailable', -- 已下架Unavailable
-  'empty' -- 已售罄Empty
+  'available', -- 已上架
+  'unavailable', -- 已下架
+  'empty' -- 已售罄
 );
 
 CREATE TABLE product (
@@ -21,6 +21,12 @@ CREATE TABLE product (
   brand      text,
   is_oversea bool NOT NULL,
   variations int  NOT NULL,
+  status product_status NOT NULL,
+  preferred bool NOT NULL,
+  min_price decimal(10, 2) NOT NULL,
+  max_price decimal(10, 2) NOT NULL,
+  discount int NOT NULL,
+  stock int NOT NULL,
 
   catetory_path_name text NOT NULL,
   catetory_path_en   text NOT NULL,
@@ -31,36 +37,29 @@ CREATE TABLE product (
   shop_name  text NOT NULL,
   location   text NOT NULL,
   
-  status    product_status NOT NULL,
-  preferred bool           NOT NULL,
-  min_price decimal(10,2)  NOT NULL,
-  max_price decimal(10,2)  NOT NULL,
-  discount  int            NOT NULL,
-
   sales_total     int NOT NULL,
   sales_30        int NOT NULL,
   sales_7         int NOT NULL,
   sales_growth_30 int NOT NULL,
-
   sales_trend_30 int[] NOT NULL,
   sales_trend_month int[] NOT NULL,
 
-  revenue_30 decimal(7,3) NOT NULL,
-  revenue_7 decimal(7,3) NOT NULL,
-  revenue_growth_30 decimal(7,3) NOT NULL,
+  revenue_30 decimal(10,2) NOT NULL,
+  revenue_7  decimal(10,2) NOT NULL,
+  revenue_growth_30 int NOT NULL,
   
-  rating decimal(3,2) NOT NULL,
-  reviews_total int(8) NOT NULL,
-  reviews_30 int(8) NOT NULL,
-  reviews_7 int(8) NOT NULL,
-  likes_total int(8) NOT NULL,
-  likes_30 int(8) NOT NULL,
-  likes_7 int(8) NOT NULL,
-  stock int(8) NOT NULL,
+  rating        decimal(3,2) NOT NULL,
+  reviews_total int NOT NULL,
+  reviews_30    int NOT NULL,
+  reviews_7     int NOT NULL,
+
+  likes_total   int NOT NULL,
+  likes_30      int NOT NULL,
+  likes_7       int NOT NULL,
 
   selling_start timestamptz NOT NULL,
-  created_time  timestamptz NOT NULL,
-  updated_time  timestamptz NOT NULL
+  create_time  timestamptz NOT NULL,
+  update_time  timestamptz NOT NULL
 );
 
 COMMENT ON TABLE product IS '商品信息';
@@ -79,29 +78,29 @@ COMMENT ON COLUMN product.is_oversea IS '是否属于海外，Y-海外，N-本�
 COMMENT ON COLUMN product.variations IS '变体数量，如：7';
 
 COMMENT ON COLUMN product.shop_id IS '店铺ID，如：28802775';
-COMMENT ON COLUMN product.shop_owner IS '店铺标识，如：rock82911';
+COMMENT ON COLUMN product.shop_owner IS '店主ID，如：rock82911';
 COMMENT ON COLUMN product.shop_name IS '店铺名称，如：VOUGE 3C - 專營各式高品質手機平板鋼化玻璃保護貼';
 
 COMMENT ON COLUMN product.location IS '产品发货地，如：新北市新莊區';
 
 COMMENT ON COLUMN product.selling_start IS '上架日期，如：2019-08-02';
-COMMENT ON COLUMN product.status IS '上架状态，A-已上架Available，U-已下架Unavailable，E-已售罄Empty';
+COMMENT ON COLUMN product.status IS '上架状态，available-已上架，unavailable-已下架，empty-已售罄';
 COMMENT ON COLUMN product.preferred IS '是否属于虾皮优选，Y-属于，N-不属于';
 
 COMMENT ON COLUMN product.min_price IS '折后最低售价(该国货币)';
 COMMENT ON COLUMN product.max_price IS '折后最高售价(该国货币)';
-COMMENT ON COLUMN product.discount IS '折扣，如：7折(0~100)';
+COMMENT ON COLUMN product.discount IS '折扣(0 ~ 100)，如：7折(70)';
 
 COMMENT ON COLUMN product.sales_total IS '累计总销量';
 COMMENT ON COLUMN product.sales_30 IS '最近30天销量';
 COMMENT ON COLUMN product.sales_7 IS '最近7天销量';
 COMMENT ON COLUMN product.sales_growth_30 IS '近30天销量增长率,如：120%';
-COMMENT ON COLUMN product.sales_trend_30 IS '最近30天日销量走势';
+COMMENT ON COLUMN product.sales_trend_30 IS '最近30天日销量走势，如：[30,40,...n]';
 COMMENT ON COLUMN product.sales_trend_month IS '最近13月的月销量走势';
 
 COMMENT ON COLUMN product.revenue_30 IS '最近30天销售额';
 COMMENT ON COLUMN product.revenue_7 IS '最近7天销售额';
-COMMENT ON COLUMN product.revenue_growth_30 IS '近30天销售额增长率';
+COMMENT ON COLUMN product.revenue_growth_30 IS '近30天销售额增长率,如：120%';
 
 COMMENT ON COLUMN product.rating IS '产品评分值，如：4.95';
 COMMENT ON COLUMN product.reviews_total IS '累计评论总数，如：301';
