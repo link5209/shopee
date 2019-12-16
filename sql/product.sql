@@ -20,7 +20,7 @@ CREATE TYPE country_type AS ENUM (
   'TH', -- Thailand
   'PH', -- Philippines
   'MY', -- Malaysia
-  'SG' -- Singapore
+  'SG'  -- Singapore
 );
 
 CREATE TABLE product (
@@ -102,7 +102,7 @@ COMMENT ON COLUMN product.preferred IS '是否属于虾皮优选，Y-属于，N-
 
 COMMENT ON COLUMN product.min_price IS '折后最低售价(该国货币)';
 COMMENT ON COLUMN product.max_price IS '折后最高售价(该国货币)';
-COMMENT ON COLUMN product.discount IS '折扣(0 ~ 100)，如：7折(70)';
+COMMENT ON COLUMN product.discount IS '折扣(0 ~ 100)，如：7折(100-70)';
 
 COMMENT ON COLUMN product.sales_total IS '累计总销量';
 COMMENT ON COLUMN product.sales_30 IS '最近30天销量';
