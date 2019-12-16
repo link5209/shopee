@@ -71,11 +71,12 @@ CREATE TABLE product (
   selling_start timestamptz NOT NULL,
   create_time   timestamptz NOT NULL,
   update_time   timestamptz NOT NULL,
-  UNIQUE('country', 'product_id')
+  UNIQUE(country, product_id)
 );
 
 COMMENT ON TABLE product IS '商品信息';
 COMMENT ON COLUMN product.product_id IS '产品ID，如：1711117483';
+COMMENT ON COLUMN product.country IS '国家，如 ：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN product.uri IS '产品URL地址，可链接到网页';
 
 COMMENT ON COLUMN product.name IS '产品名称，如：現貨 電競霧面滿版 HUAWEI MATE20X 5D熱彎曲面 MATE20 PRO 電競御用';
