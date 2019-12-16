@@ -13,8 +13,19 @@ CREATE TYPE product_status AS ENUM (
   'empty' -- 已售罄
 );
 
+CREATE TYPE country_type AS ENUM (
+  'ID', -- Indonesia
+  'TW', -- Taiwan
+  'VN', -- Vietnam
+  'TH', -- Thailand
+  'PH', -- Philippines
+  'MY', -- Malaysia
+  'SG' -- Singapore
+);
+
 CREATE TABLE product (
   product_id bigint PRIMARY KEY NOT NULL,
+  country    country_type NOT NULL,
   uri        text NOT NULL,
   name       text NOT NULL,
   image_url  text NOT NULL,
@@ -37,15 +48,15 @@ CREATE TABLE product (
   shop_name  text NOT NULL,
   location   text NOT NULL,
   
-  sales_total     int NOT NULL,
-  sales_30        int NOT NULL,
-  sales_7         int NOT NULL,
-  sales_growth_30 int NOT NULL,
-  sales_trend_30 int[] NOT NULL,
+  sales_total       int NOT NULL,
+  sales_30          int NOT NULL,
+  sales_7           int NOT NULL,
+  sales_growth_30   int NOT NULL,
+  sales_trend_30    int[] NOT NULL,
   sales_trend_month int[] NOT NULL,
 
-  revenue_30 decimal(10,2) NOT NULL,
-  revenue_7  decimal(10,2) NOT NULL,
+  revenue_30        decimal(10,2) NOT NULL,
+  revenue_7         decimal(10,2) NOT NULL,
   revenue_growth_30 int NOT NULL,
   
   rating        decimal(3,2) NOT NULL,
@@ -58,8 +69,8 @@ CREATE TABLE product (
   likes_7       int NOT NULL,
 
   selling_start timestamptz NOT NULL,
-  create_time  timestamptz NOT NULL,
-  update_time  timestamptz NOT NULL
+  create_time   timestamptz NOT NULL,
+  update_time   timestamptz NOT NULL
 );
 
 COMMENT ON TABLE product IS '商品信息';
