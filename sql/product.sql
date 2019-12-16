@@ -7,6 +7,12 @@
 -- CREATE TABLE product_monthly
 
 
+CREATE TYPE product_status AS ENUM (
+  'available', -- 已上架Available
+  'unavailable', -- 已下架Unavailable
+  'empty' -- 已售罄Empty
+);
+
 CREATE TABLE product (
   product_id bigint PRIMARY KEY NOT NULL,
   uri        text NOT NULL,
@@ -25,25 +31,25 @@ CREATE TABLE product (
   shop_name  text NOT NULL,
   location   text NOT NULL,
   
-  status char(1) NOT NULL,
-  preferred bool NOT NULL,
-  min_price decimal(10,2) NOT NULL,
-  max_price decimal(10,2) NOT NULL,
-  discount int NOT NULL,
+  status    product_status NOT NULL,
+  preferred bool           NOT NULL,
+  min_price decimal(10,2)  NOT NULL,
+  max_price decimal(10,2)  NOT NULL,
+  discount  int            NOT NULL,
 
-  sales_total int(8) NOT NULL,
-  sales_30 int(8) NOT NULL,
-  sales_7 int(8) NOT NULL,
-  sales_growth_30 float(8,2) NOT NULL,
+  sales_total     int NOT NULL,
+  sales_30        int NOT NULL,
+  sales_7         int NOT NULL,
+  sales_growth_30 int NOT NULL,
 
-  sales_trend_day jsonb NOT NULL,
-  sales_trend_month jsonb NOT NULL,
+  sales_trend_30 int[] NOT NULL,
+  sales_trend_month int[] NOT NULL,
 
   revenue_30 decimal(7,3) NOT NULL,
   revenue_7 decimal(7,3) NOT NULL,
   revenue_growth_30 decimal(7,3) NOT NULL,
   
-  rating float(3,2) NOT NULL,
+  rating decimal(3,2) NOT NULL,
   reviews_total int(8) NOT NULL,
   reviews_30 int(8) NOT NULL,
   reviews_7 int(8) NOT NULL,
@@ -89,9 +95,9 @@ COMMENT ON COLUMN product.discount IS '折扣，如：7折(0~100)';
 COMMENT ON COLUMN product.sales_total IS '累计总销量';
 COMMENT ON COLUMN product.sales_30 IS '最近30天销量';
 COMMENT ON COLUMN product.sales_7 IS '最近7天销量';
-COMMENT ON COLUMN product.sales_growth_30 IS '近30天销量增长率';
-COMMENT ON COLUMN product.sales_trend_day IS '最近30天日销量走势，json格式';
-COMMENT ON COLUMN product.sales_trend_month IS '最近13月的月销量走势，json格式';
+COMMENT ON COLUMN product.sales_growth_30 IS '近30天销量增长率,如：120%';
+COMMENT ON COLUMN product.sales_trend_30 IS '最近30天日销量走势';
+COMMENT ON COLUMN product.sales_trend_month IS '最近13月的月销量走势';
 
 COMMENT ON COLUMN product.revenue_30 IS '最近30天销售额';
 COMMENT ON COLUMN product.revenue_7 IS '最近7天销售额';
