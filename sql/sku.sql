@@ -48,6 +48,6 @@ COMMENT ON COLUMN sku_history.name IS 'eg:紅色,S';
 COMMENT ON COLUMN sku_history.stock IS '当前库存数量';
 COMMENT ON COLUMN sku_history.price IS '折后售价(该国货币)';
 COMMENT ON COLUMN sku_history.sold IS '已售出';
-COMMENT ON COLUMN sku_history.sold_1 IS '当日售出';
+COMMENT ON COLUMN sku_history.sold_1 IS '当日售出,eg: 3';
 COMMENT ON COLUMN sku_history.status IS 'available-已上架，unavailable-已下架，empty-已售罄';
 COMMENT ON COLUMN sku_history.create_time IS '该条记录创建时间';

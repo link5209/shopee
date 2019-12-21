@@ -1,9 +1,5 @@
 
--- CREATE TABLE product_daily
 -- CREATE TABLE product_weekly
---   COMMENT ON COLUMN product.sales_growth_week IS '销量增长率-按周';
---   COMMENT ON COLUMN product.revenue_1 IS '最近1天销售额';
-
 -- CREATE TABLE product_monthly
 
 
@@ -23,6 +19,7 @@ CREATE TYPE country_type AS ENUM (
   'SG'  -- Singapore
 );
 
+-- 该表会加载到ES，因此存在许多冗余，为了方便查询统计
 CREATE TABLE product (
   product_id bigint        NOT NULL,
   country    country_type  NOT NULL,
