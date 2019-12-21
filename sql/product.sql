@@ -1,8 +1,3 @@
-
--- CREATE TABLE product_weekly
--- CREATE TABLE product_monthly
-
-
 CREATE TYPE product_status AS ENUM (
   'available', -- 已上架
   'unavailable', -- 已下架
