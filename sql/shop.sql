@@ -28,13 +28,12 @@ CREATE TABLE shop (
     delivery_days     text          NOT NULL,
     join_time         timestamptz   NOT NULL,
     created_time      timestamptz   NOT NULL,
-    updated_time      timestamptz   NOT NULL
+    update_time       timestamptz   NOT NULL
 );
 
 COMMENT ON TABLE shop IS '店铺信息';
-COMMENT ON COLUMN shop.shop_id IS '主键ID';
-COMMENT ON COLUMN shop.country IS '国家，如：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN shop.shop_id IS '店铺ID，如：28802775';
+COMMENT ON COLUMN shop.country IS '国家，如：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN shop.username IS '店铺标识，如：rock82911';
 COMMENT ON COLUMN shop.name IS '店铺名称，如：VOUGE 3C - 專營各式高品質手機平板鋼化玻璃保護貼';
 COMMENT ON COLUMN shop.logo_url IS '店铺封面图片URL';
@@ -62,4 +61,4 @@ COMMENT ON COLUMN shop.follows IS '关注中';
 COMMENT ON COLUMN shop.chat_rate IS '聊聊表现，如：0.95';
 COMMENT ON COLUMN shop.delivery_days IS '出货天数，如：1-3，5+';
 COMMENT ON COLUMN shop.created_time IS '该条记录创建时间';
-COMMENT ON COLUMN shop.updated_time IS '该条记录更新时间';
+COMMENT ON COLUMN shop.update_time IS '记录更新时间';
