@@ -4,7 +4,6 @@ CREATE TABLE sku_history (
     country     country_type   NOT NULL,
     product_id  bigint         NOT NULL,
     sku_id      bigint         NOT NULL,
-    name        text           NOT NULL,
     stock       int            NOT NULL,
     price       decimal(10, 2) NOT NULL,
     sold        int            NOT NULL,
@@ -19,7 +18,6 @@ COMMENT ON TABLE sku_history IS 'sku历史记录(日更新)';
 COMMENT ON COLUMN sku_history.country IS '国家，如 ：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN sku_history.product_id IS '产品ID，如：1711117483';
 COMMENT ON COLUMN sku_history.sku_id IS '变体ID，如：1711117483';
-COMMENT ON COLUMN sku_history.name IS 'eg:紅色,S';
 COMMENT ON COLUMN sku_history.stock IS '当前库存数量';
 COMMENT ON COLUMN sku_history.price IS '折后售价(该国货币)';
 COMMENT ON COLUMN sku_history.sold IS '截止当日累计已售出';
