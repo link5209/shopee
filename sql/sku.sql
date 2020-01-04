@@ -46,32 +46,41 @@ CREATE OR REPLACE FUNCTION save_to_sku_history() RETURNS trigger as $$
         -- get latest sku row
         latest_row := SELECT sold, create_time FROM sku_history
         WHERE product_id = NEW.product_id AND sku_id = NEW.sku_id
+        -- AND create_time < NEW.update_time -- for constraint exclusion usage when sku_history changed to foreign table
         ORDER BY create_time DESC LIMIT 1;
 
-        -- cal gap between current date
-        gap := SELECT (EXTRACT(epoch FROM NEW.create_time - latest_row.create_time)/3600/24)::int;
-        IF (gap < 1) THEN RETURN END IF;
+        IF FOUND THEN
+            -- cal gap between current date
+            gap := SELECT (EXTRACT(epoch FROM NEW.create_time - latest_row.create_time)/3600/24)::int;
+            IF (gap < 1) THEN RETURN END IF;
 
-        _sold_1 := NEW.sales - latest_row.sold;
-        sold_1_avg := _sold_1 / gap;
-        revenue_growth_avg := sold_1_avg * NEW.price;
-        IF (gap > 1) THEN
-            FOR i IN 1..(gap-1) LOOP
-                INSERT INTO sku_history (country, product_id, sku_id, name, stock, price, sold, sold_1,
-                    revenue, revenue_1, status)
-                VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.name, NEW.stock-sold_1_avg, NEW.price,
-                    NEW.sold+sold_1_avg, sold_1_avg, latest_row.revenue+revenue_growth_avg, revenue_growth_avg, NEW.status);
-            END LOOP;
+            _sold_1 := NEW.sales - latest_row.sold;
+            sold_1_avg := _sold_1 / gap;
+            revenue_growth_avg := sold_1_avg * NEW.price;
+            IF (gap > 1) THEN
+                FOR i IN 1..(gap-1) LOOP
+                    INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
+                        revenue, revenue_1, status)
+                    VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock-sold_1_avg, NEW.price,
+                        NEW.sold+sold_1_avg, sold_1_avg, latest_row.revenue+revenue_growth_avg, revenue_growth_avg, NEW.status);
+                END LOOP;
+            END IF;
+
+            -- 当日数据单独处理，因为sold_1_avg可能Double转Int后丢失精度
+            current_sold_1 := _sold_1-(sold_1_avg*(gap-1));
+            current_revenue_growth := current_sold_1 * NEW.price
+            INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
+                revenue, revenue_1, status)
+            VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock,
+                NEW.price, NEW.sold, current_sold_1,
+                latest_row.revenue+current_revenue_growth, current_revenue_growth, NEW.status);
+        ELSE
+            -- 该SKU第一次插入，不能计算增量数据，sold_1/revenue_1默认0
+            INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
+                revenue, revenue_1, status)
+            VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock, NEW.price, NEW.sold, 0,
+                NEW.price*NEW.sold, 0, NEW.status);
         END IF;
-
-        -- 当日数据单独处理，因为sold_1_avg可能Double转Int后丢失精度
-        current_sold_1 := _sold_1-(sold_1_avg*(gap-1));
-        current_revenue_growth := current_sold_1 * NEW.price
-        INSERT INTO sku_history (country, product_id, sku_id, name, stock, price, sold, sold_1,
-            revenue, revenue_1, status)
-        VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.name, NEW.stock,
-            NEW.price, NEW.sold, current_sold_1,
-            latest_row.revenue+current_revenue_growth, current_revenue_growth, NEW.status);
     END;
 $$ LANGUAGE plpgsql;
 

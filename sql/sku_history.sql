@@ -1,5 +1,10 @@
 -- 该表单站点一年存储预估4T(30亿/月 * 12个月 * 10G/亿)
--- partition by list(country) then by timescaleDB, using foreign table
+-- eg:
+-- DB: shopee_tw, PARTITION BY RANGE (create_time)
+-- CREATE FOREIGN TABLE sku_history_pg01 INHERITS (sku_history);
+-- CHECK ( create_time >= DATE '2006-02-01' AND create_time < DATE '2006-03-01' )
+-- then by timescaleDB
+
 CREATE TABLE sku_history (
     country     country_type   NOT NULL,
     product_id  bigint         NOT NULL,
