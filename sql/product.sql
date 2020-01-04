@@ -67,7 +67,7 @@ CREATE TABLE product (
 );
 
 COMMENT ON TABLE product IS '商品信息';
-COMMENT ON COLUMN product.product_id IS '产品ID，如：1711117483';
+COMMENT ON COLUMN product.product_id IS '产品ID，如：1711117483(所有站点product_id唯一)';
 COMMENT ON COLUMN product.country IS '国家，如 ：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN product.uri IS '产品URL地址，可链接到网页';
 
