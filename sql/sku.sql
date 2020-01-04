@@ -24,3 +24,44 @@ COMMENT ON COLUMN sku.sales IS '累计总销量';
 COMMENT ON COLUMN sku.status IS 'available-已上架，unavailable-已下架，empty-已售罄';
 COMMENT ON COLUMN sku.create_time IS '该条记录创建时间';
 COMMENT ON COLUMN sku.update_time IS '该条记录更新时间';
+
+-- 保存当日sku信息到历史记录表
+CREATE OR REPLACE FUNCTION save_to_sku_history() RETURNS trigger as $$
+    DECLARE
+        -- latest_row sku_history%rowtype;
+        latest_row RECORD;
+         -- 和最近一次更新时间比较相差的天数（正常为一日）
+        gap int;
+        -- 和最近一次更新时间比较的销售增量（可能大于一日）
+        _sold_1 int;
+        -- 计算每天平均的销售增量
+        sold_1_avg int;
+    BEGIN
+        -- get latest sku row
+        latest_row := SELECT sold, create_time FROM sku_history
+        WHERE product_id = NEW.product_id AND sku_id = NEW.sku_id
+        ORDER BY create_time DESC LIMIT 1;
+
+        -- cal gap between current date
+        _sold_1 := NEW.sales - latest_row.sold;
+        gap := SELECT (EXTRACT(epoch FROM NEW.create_time - latest_row.create_time)/3600/24)::int;
+        sold_1_avg := _sold_1 / gap;
+
+        IF (gap < 1) THEN RETURN END IF;
+        IF (gap > 1) THEN
+            FOR i IN 1..(gap-1) LOOP
+                INSERT INTO sku_history (country, product_id, sku_id, name, stock, price, sold, sold_1, status)
+                VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.name, NEW.stock-sold_1_avg,
+                    NEW.price, NEW.sold+sold_1_avg, sold_1_avg, NEW.status);
+            END LOOP;
+        END IF;
+
+        -- 当日数据单独处理，因为sold_1_avg可能Double转Int后丢失精度
+        INSERT INTO sku_history (country, product_id, sku_id, name, stock, price, sold, sold_1, status)
+        VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.name, NEW.stock,
+            NEW.price, NEW.sold, _sold_1-(sold_1_avg*(gap-1)), NEW.status);
+    END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_sku_history AFTER INSERT OR UPDATE ON sku
+    FOR EACH ROW EXECUTE FUNCTION save_to_sku_history();

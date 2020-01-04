@@ -10,7 +10,7 @@ CREATE TABLE sku_history (
     sold        int            NOT NULL,
     sold_1      int            NOT NULL,
     status      product_status NOT NULL,
-    create_time timestamptz    NOT NULL
+    create_time timestamptz    NOT NULL DEFAULT now()
 );
 
 COMMENT ON TABLE sku_history IS 'sku历史记录(日更新)';
