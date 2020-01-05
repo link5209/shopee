@@ -121,3 +121,29 @@ COMMENT ON COLUMN product.likes_7 IS '最近7天点赞数';
 COMMENT ON COLUMN product.stock IS '所有变体总库存数量';
 COMMENT ON COLUMN product.create_time IS '该条记录创建时间';
 COMMENT ON COLUMN product.update_time IS '该条记录更新时间';
+
+-- 保存当日product信息到历史记录表
+CREATE OR REPLACE FUNCTION save_product_history() RETURNS trigger as $$
+  DECLARE
+
+  BEGIN
+    -- PS: think about constraint exclusion when product_history become foreign table
+    row := SELECT sold, revenue, reviews, likes, create_time FROM product_history
+      WHERE product_id = NEW.product_id
+      ORDER BY create_time DESC LIMIT 1;
+
+    IF FOUND THEN
+
+    ELSE
+    -- 该product第一次插入，不能计算增量数据，sold_1/revenue_1/reviews_1/likes_1默认0
+    INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
+      reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
+    VALUES (NEW.product_id, NEW.country, NEW.sales_total, 0 NEW.revenue_total, 0, stock,
+      NEW.reviews, 0, NEW.likes, 0, NEW.catetory_id, shop_id);
+
+    END IF;
+  END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_product AFTER INSERT OR UPDATE ON product
+  FOR EACH ROW EXECUTE FUNCTION save_product_history();
