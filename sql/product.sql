@@ -40,12 +40,12 @@ CREATE TABLE product (
   shop_name  text NOT NULL,
   location   text NOT NULL,
   
-  sales_total       int   NOT NULL,
-  sales_30          int   NOT NULL,
-  sales_7           int   NOT NULL,
-  sales_growth_30   int   NOT NULL,
-  sales_trend_30    int[] NOT NULL,
-  sales_trend_month int[] NOT NULL,
+  sold             int   NOT NULL,
+  sold_30          int   NOT NULL,
+  sold_7           int   NOT NULL,
+  sold_growth_30   int   NOT NULL,
+  sold_trend_30    int[] NOT NULL,
+  sold_trend_month int[] NOT NULL,
 
   revenue_total     decimal(10,2) NOT NULL,
   revenue_30        decimal(10,2) NOT NULL,
@@ -97,12 +97,12 @@ COMMENT ON COLUMN product.min_price IS '折后最低售价(该国货币)';
 COMMENT ON COLUMN product.max_price IS '折后最高售价(该国货币)';
 COMMENT ON COLUMN product.discount IS '折扣(0 ~ 100)，如：7折(100-70)';
 
-COMMENT ON COLUMN product.sales_total IS '累计总销量';
-COMMENT ON COLUMN product.sales_30 IS '最近30天销量';
-COMMENT ON COLUMN product.sales_7 IS '最近7天销量';
-COMMENT ON COLUMN product.sales_growth_30 IS '近30天销量增长率,如：120%';
-COMMENT ON COLUMN product.sales_trend_30 IS '最近30天日销量走势，如：[30,40,...n]';
-COMMENT ON COLUMN product.sales_trend_month IS '最近13月的月销量走势';
+COMMENT ON COLUMN product.sold IS '累计总销量';
+COMMENT ON COLUMN product.sold_30 IS '最近30天销量';
+COMMENT ON COLUMN product.sold_7 IS '最近7天销量';
+COMMENT ON COLUMN product.sold_growth_30 IS '近30天销量增长率,如：120%';
+COMMENT ON COLUMN product.sold_trend_30 IS '最近30天日销量走势，如：[30,40,...n]';
+COMMENT ON COLUMN product.sold_trend_month IS '最近13月的月销量走势';
 
 COMMENT ON COLUMN product.revenue_total IS '历史累计销售额';
 COMMENT ON COLUMN product.revenue_30 IS '最近30天销售额';
@@ -138,7 +138,7 @@ CREATE OR REPLACE FUNCTION save_product_history() RETURNS trigger as $$
     -- 该product第一次插入，不能计算增量数据，sold_1/revenue_1/reviews_1/likes_1默认0
     INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
       reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
-    VALUES (NEW.product_id, NEW.country, NEW.sales_total, 0 NEW.revenue_total, 0, stock,
+    VALUES (NEW.product_id, NEW.country, NEW.sold, 0 NEW.revenue_total, 0, stock,
       NEW.reviews, 0, NEW.likes, 0, NEW.catetory_id, shop_id);
 
     END IF;
