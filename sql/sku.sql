@@ -71,8 +71,7 @@ CREATE OR REPLACE FUNCTION save_to_sku_history() RETURNS trigger as $$
             current_revenue_growth := current_sold_1 * NEW.price
             INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
                 revenue, revenue_1, status)
-            VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock,
-                NEW.price, NEW.sold, current_sold_1,
+            VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock, NEW.price, NEW.sold, current_sold_1,
                 latest_row.revenue+current_revenue_growth, current_revenue_growth, NEW.status);
         ELSE
             -- 该SKU第一次插入，不能计算增量数据，sold_1/revenue_1默认0

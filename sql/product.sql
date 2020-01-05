@@ -47,6 +47,7 @@ CREATE TABLE product (
   sales_trend_30    int[] NOT NULL,
   sales_trend_month int[] NOT NULL,
 
+  revenue_total     decimal(10,2) NOT NULL,
   revenue_30        decimal(10,2) NOT NULL,
   revenue_7         decimal(10,2) NOT NULL,
   revenue_growth_30 int           NOT NULL,
@@ -103,6 +104,7 @@ COMMENT ON COLUMN product.sales_growth_30 IS '近30天销量增长率,如：120%
 COMMENT ON COLUMN product.sales_trend_30 IS '最近30天日销量走势，如：[30,40,...n]';
 COMMENT ON COLUMN product.sales_trend_month IS '最近13月的月销量走势';
 
+COMMENT ON COLUMN product.revenue_total IS '历史累计销售额';
 COMMENT ON COLUMN product.revenue_30 IS '最近30天销售额';
 COMMENT ON COLUMN product.revenue_7 IS '最近7天销售额';
 COMMENT ON COLUMN product.revenue_growth_30 IS '近30天销售额增长率,如：120%';
