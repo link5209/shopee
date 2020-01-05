@@ -152,29 +152,53 @@ CREATE OR REPLACE FUNCTION save_product_history() RETURNS trigger as $$
         _sold_1 := NEW.sold - _row.sold;
         -- 默认前提是该产品昨日(爬虫最新数据都是更新昨日的数据)的sku历史数据已经记录到sku_history表
         -- 即：当日product表的更新需要在产品对应sku相关表数据都处理完成以后进行
-        _revenue_1 := WITH tmp AS (
-          SELECT DISTINCT ON (sku_id) sku_id, revenue_1 FROM sku_history
-          WHERE product_id = NEW.product_id AND create_time::date = NEW.create_time::date)
-          SELECT sum(revenue_1) revenue_1 FROM tmp;
-
-
+        -- 让product表处理
+        -- _revenue_1 := WITH tmp AS (
+        --   SELECT DISTINCT ON (sku_id) sku_id, revenue_1 FROM sku_history
+        --   WHERE product_id = NEW.product_id AND create_time::date = NEW.create_time::date)
+        --   SELECT sum(revenue_1) revenue_1 FROM tmp;
         INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
           reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
-        VALUES (NEW.product_id, NEW.country, NEW.sold, _sold_1, NEW.revenue+_revenue_1, _revenue_1, stock,
+        VALUES (NEW.product_id, NEW.country, NEW.sold, _sold_1, NEW.revenue, NEW.revenue_1, stock,
           NEW.reviews, NEW.reviews_1, NEW.likes, NEW.likes_1, NEW.catetory_id, shop_id);
 
       ELSE
         -- 每日记录有缺失
+        sold_n        := NEW.sold - _row.sold;
+        revenue_n     := NEW.revenue - _row.revenue;
+        reviews_n     := NEW.reviews - _row.reviews;
+        likes_n       := NEW.likes - _row.likes;
 
+        sold_1_avg    := sold_n / gap;
+        revenue_1_avg := revenue_n / gap;
+        reviews_1_avg := reviews_n / gap;
+        likes_1_avg   := likes_n / gap;
 
+        FOR i IN 1..(gap-1) LOOP
+          INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
+            reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
+          VALUES (NEW.product_id, NEW.country, NEW.sold, sold_1_avg, NEW.revenue, revenue_1_avg,
+          stock - sold_1_avg*i, NEW.reviews, reviews_1_avg, NEW.likes, likes_1_avg, NEW.catetory_id, shop_id);
+        END LOOP;
+
+        -- 当日数据单独处理，因为xxx_1_avg可能Double转Int后丢失精度
+        last_sold_1    := sold_n - (sold_1_avg*(gap-1));
+        last_revenue_1 := revenue_n - (revenue_1_avg*(gap-1));
+        last_reviews_1 := reviews_n - (reviews_1_avg*(gap-1));
+        last_likes_1   := likes_n - (likes_1_avg*(gap-1));
+
+        INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
+            reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
+          VALUES (NEW.product_id, NEW.country, NEW.sold, last_sold_1, NEW.revenue, last_revenue_1, NEW.stock,
+            NEW.reviews, last_reviews_1, NEW.likes, last_likes_1, NEW.catetory_id, NEW.shop_id);
       END IF;
 
     ELSE
       -- 该product第一次插入，不能计算增量数据，sold_1/revenue_1/reviews_1/likes_1默认0
       INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
         reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
-      VALUES (NEW.product_id, NEW.country, NEW.sold, 0, NEW.revenue, 0, stock,
-        NEW.reviews, 0, NEW.likes, 0, NEW.catetory_id, shop_id);
+      VALUES (NEW.product_id, NEW.country, NEW.sold, 0, NEW.revenue, 0, NEW.stock,
+        NEW.reviews, 0, NEW.likes, 0, NEW.catetory_id, NEW.shop_id);
     END IF;
   END;
 $$ LANGUAGE plpgsql;
