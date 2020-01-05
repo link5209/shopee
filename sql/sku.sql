@@ -1,6 +1,5 @@
 
 CREATE TABLE sku (
-    country     country_type   NOT NULL,
     product_id  bigint         NOT NULL,
     sku_id      bigint         NOT NULL,
     name        text           NOT NULL,
@@ -14,7 +13,6 @@ CREATE TABLE sku (
 );
 
 COMMENT ON TABLE sku IS '商品对应的sku列表';
-COMMENT ON COLUMN sku.country IS '国家，如 ：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN sku.product_id IS '产品ID，如：1711117483';
 COMMENT ON COLUMN sku.sku_id IS '变体ID，如：1711117483(所有站点sku_id唯一)';
 COMMENT ON COLUMN sku.name IS 'eg:紅色,S';
@@ -59,9 +57,9 @@ CREATE OR REPLACE FUNCTION save_to_sku_history() RETURNS trigger as $$
             revenue_growth_avg := sold_1_avg * NEW.price;
             IF (gap > 1) THEN
                 FOR i IN 1..(gap-1) LOOP
-                    INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
+                    INSERT INTO sku_history (product_id, sku_id, stock, price, sold, sold_1,
                         revenue, revenue_1, status)
-                    VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock-sold_1_avg, NEW.price,
+                    VALUES (NEW.product_id, NEW.sku_id, NEW.stock-sold_1_avg, NEW.price,
                         NEW.sold+sold_1_avg, sold_1_avg, latest_row.revenue+revenue_growth_avg, revenue_growth_avg, NEW.status);
                 END LOOP;
             END IF;
@@ -69,15 +67,15 @@ CREATE OR REPLACE FUNCTION save_to_sku_history() RETURNS trigger as $$
             -- 当日数据单独处理，因为sold_1_avg可能Double转Int后丢失精度
             current_sold_1 := _sold_1-(sold_1_avg*(gap-1));
             current_revenue_growth := current_sold_1 * NEW.price
-            INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
+            INSERT INTO sku_history (product_id, sku_id, stock, price, sold, sold_1,
                 revenue, revenue_1, status)
-            VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock, NEW.price, NEW.sold, current_sold_1,
+            VALUES (NEW.product_id, NEW.sku_id, NEW.stock, NEW.price, NEW.sold, current_sold_1,
                 latest_row.revenue+current_revenue_growth, current_revenue_growth, NEW.status);
         ELSE
             -- 该SKU第一次插入，不能计算增量数据，sold_1/revenue_1默认0
-            INSERT INTO sku_history (country, product_id, sku_id, stock, price, sold, sold_1,
+            INSERT INTO sku_history (product_id, sku_id, stock, price, sold, sold_1,
                 revenue, revenue_1, status)
-            VALUES (NEW.country, NEW.product_id, NEW.sku_id, NEW.stock, NEW.price, NEW.sold, 0,
+            VALUES (NEW.product_id, NEW.sku_id, NEW.stock, NEW.price, NEW.sold, 0,
                 NEW.price*NEW.sold, 0, NEW.status);
         END IF;
     END;

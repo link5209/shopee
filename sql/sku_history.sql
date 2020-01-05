@@ -6,7 +6,7 @@
 -- then by timescaleDB
 
 CREATE TABLE sku_history (
-    country     country_type   NOT NULL,
+    -- country     country_type   NOT NULL,
     product_id  bigint         NOT NULL,
     sku_id      bigint         NOT NULL,
     stock       int            NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE sku_history (
 );
 
 COMMENT ON TABLE sku_history IS 'sku历史记录(日更新)';
-COMMENT ON COLUMN sku_history.country IS '国家，如 ：ID TW VN TH PH MY SG';
+-- COMMENT ON COLUMN sku_history.country IS '国家，如 ：ID TW VN TH PH MY SG';
 COMMENT ON COLUMN sku_history.product_id IS '产品ID，如：1711117483';
 COMMENT ON COLUMN sku_history.sku_id IS '变体ID，如：1711117483';
 COMMENT ON COLUMN sku_history.stock IS '当前库存数量';
