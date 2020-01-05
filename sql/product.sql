@@ -43,6 +43,7 @@ CREATE TABLE product (
   sold             int   NOT NULL,
   sold_30          int   NOT NULL,
   sold_7           int   NOT NULL,
+  sold_1           int   NOT NULL,
   sold_growth_30   int   NOT NULL,
   sold_trend_30    int[] NOT NULL,
   sold_trend_month int[] NOT NULL,
@@ -50,16 +51,19 @@ CREATE TABLE product (
   revenue           decimal(10,2) NOT NULL,
   revenue_30        decimal(10,2) NOT NULL,
   revenue_7         decimal(10,2) NOT NULL,
+  revenue_1         decimal(10,2) NOT NULL,
   revenue_growth_30 int           NOT NULL,
   
   rating        decimal(3,2) NOT NULL,
   reviews_total int          NOT NULL,
   reviews_30    int          NOT NULL,
   reviews_7     int          NOT NULL,
+  reviews_1     int          NOT NULL,
 
   likes_total   int NOT NULL,
   likes_30      int NOT NULL,
   likes_7       int NOT NULL,
+  likes_1       int NOT NULL,
 
   selling_start timestamptz NOT NULL,
   create_time   timestamptz NOT NULL,
@@ -100,6 +104,7 @@ COMMENT ON COLUMN product.discount IS '折扣(0 ~ 100)，如：7折(100-70)';
 COMMENT ON COLUMN product.sold IS '累计总销量';
 COMMENT ON COLUMN product.sold_30 IS '最近30天销量';
 COMMENT ON COLUMN product.sold_7 IS '最近7天销量';
+COMMENT ON COLUMN product.sold_1 IS '最近1天销量';
 COMMENT ON COLUMN product.sold_growth_30 IS '近30天销量增长率,如：120%';
 COMMENT ON COLUMN product.sold_trend_30 IS '最近30天日销量走势，如：[30,40,...n]';
 COMMENT ON COLUMN product.sold_trend_month IS '最近13月的月销量走势';
@@ -107,16 +112,19 @@ COMMENT ON COLUMN product.sold_trend_month IS '最近13月的月销量走势';
 COMMENT ON COLUMN product.revenue IS '历史累计销售额';
 COMMENT ON COLUMN product.revenue_30 IS '最近30天销售额';
 COMMENT ON COLUMN product.revenue_7 IS '最近7天销售额';
+COMMENT ON COLUMN product.revenue_1 IS '最近1天销售额';
 COMMENT ON COLUMN product.revenue_growth_30 IS '近30天销售额增长率,如：120%';
 
 COMMENT ON COLUMN product.rating IS '产品评分值，如：4.95';
 COMMENT ON COLUMN product.reviews_total IS '累计评论总数，如：301';
 COMMENT ON COLUMN product.reviews_30 IS '最近30天新增评论数';
 COMMENT ON COLUMN product.reviews_7 IS '最近7天新增评论数';
+COMMENT ON COLUMN product.reviews_1 IS '最近1天新增评论数';
 
 COMMENT ON COLUMN product.likes_total IS '累计点赞总数';
 COMMENT ON COLUMN product.likes_30 IS '最近30天点赞数';
 COMMENT ON COLUMN product.likes_7 IS '最近7天点赞数';
+COMMENT ON COLUMN product.likes_1 IS '最近1天点赞数';
 
 COMMENT ON COLUMN product.stock IS '所有变体总库存数量';
 COMMENT ON COLUMN product.create_time IS '该条记录创建时间';
@@ -128,19 +136,45 @@ CREATE OR REPLACE FUNCTION save_product_history() RETURNS trigger as $$
 
   BEGIN
     -- PS: think about constraint exclusion when product_history become foreign table
-    row := SELECT sold, revenue, reviews, likes, create_time FROM product_history
+    _row := SELECT sold, revenue, reviews, likes, create_time FROM product_history
       WHERE product_id = NEW.product_id
       ORDER BY create_time DESC LIMIT 1;
 
     IF FOUND THEN
+      -- intervals by day
+      gap := SELECT NEW.create_time::date - _row.create_time::date;
+
+      IF (gap < 1) THEN
+        raise notice 'Warn: gap can not be < 1, %', NEW.create_time;
+        RETURN;
+      ELSE IF (gap = 1) THEN
+        -- 每日正常记录
+        _sold_1 := NEW.sold - _row.sold;
+        -- 默认前提是该产品昨日(爬虫最新数据都是更新昨日的数据)的sku历史数据已经记录到sku_history表
+        -- 即：当日product表的更新需要在产品对应sku相关表数据都处理完成以后进行
+        _revenue_1 := WITH tmp AS (
+          SELECT DISTINCT ON (sku_id) sku_id, revenue_1 FROM sku_history
+          WHERE product_id = NEW.product_id AND create_time::date = NEW.create_time::date)
+          SELECT sum(revenue_1) revenue_1 FROM tmp;
+
+
+        INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
+          reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
+        VALUES (NEW.product_id, NEW.country, NEW.sold, _sold_1, NEW.revenue+_revenue_1, _revenue_1, stock,
+          NEW.reviews, NEW.reviews_1, NEW.likes, NEW.likes_1, NEW.catetory_id, shop_id);
+
+      ELSE
+        -- 每日记录有缺失
+
+
+      END IF;
 
     ELSE
-    -- 该product第一次插入，不能计算增量数据，sold_1/revenue_1/reviews_1/likes_1默认0
-    INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
-      reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
-    VALUES (NEW.product_id, NEW.country, NEW.sold, 0 NEW.revenue, 0, stock,
-      NEW.reviews, 0, NEW.likes, 0, NEW.catetory_id, shop_id);
-
+      -- 该product第一次插入，不能计算增量数据，sold_1/revenue_1/reviews_1/likes_1默认0
+      INSERT INTO product_history (product_id, country, sold, sold_1, revenue, revenue_1, stock,
+        reviews, reviews_1, likes, likes_1, catetory_id, shop_id)
+      VALUES (NEW.product_id, NEW.country, NEW.sold, 0, NEW.revenue, 0, stock,
+        NEW.reviews, 0, NEW.likes, 0, NEW.catetory_id, shop_id);
     END IF;
   END;
 $$ LANGUAGE plpgsql;
