@@ -5,7 +5,7 @@ CREATE TABLE sku (
     name        text           NOT NULL,
     stock       int            NOT NULL,
     price       decimal(10, 2) NOT NULL,
-    sold       int            NOT NULL,
+    sold        int            NOT NULL,
     revenue     decimal(10,2)  NOT NULL,
     status      product_status NOT NULL,
     create_time timestamptz    NOT NULL,
