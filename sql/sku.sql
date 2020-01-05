@@ -5,7 +5,7 @@ CREATE TABLE sku (
     name        text           NOT NULL,
     stock       int            NOT NULL,
     price       decimal(10, 2) NOT NULL,
-    sales       int            NOT NULL,
+    sold       int            NOT NULL,
     revenue     decimal(10,2)  NOT NULL,
     status      product_status NOT NULL,
     create_time timestamptz    NOT NULL,
@@ -19,7 +19,7 @@ COMMENT ON COLUMN sku.sku_id IS '变体ID，如：1711117483(所有站点sku_id�
 COMMENT ON COLUMN sku.name IS 'eg:紅色,S';
 COMMENT ON COLUMN sku.stock IS '当前库存数量';
 COMMENT ON COLUMN sku.price IS '当前折后售价(该国货币)';
-COMMENT ON COLUMN sku.sales IS '累计总销量';
+COMMENT ON COLUMN sku.sold IS '累计总销量';
 COMMENT ON COLUMN sku.revenue IS '累计销售额';
 COMMENT ON COLUMN sku.status IS 'available-已上架，unavailable-已下架，empty-已售罄';
 COMMENT ON COLUMN sku.create_time IS '该条记录创建时间';
@@ -54,7 +54,7 @@ CREATE OR REPLACE FUNCTION save_to_sku_history() RETURNS trigger as $$
             gap := SELECT (EXTRACT(epoch FROM NEW.create_time - latest_row.create_time)/3600/24)::int;
             IF (gap < 1) THEN RETURN END IF;
 
-            _sold_1 := NEW.sales - latest_row.sold;
+            _sold_1 := NEW.sold - latest_row.sold;
             sold_1_avg := _sold_1 / gap;
             revenue_growth_avg := sold_1_avg * NEW.price;
             IF (gap > 1) THEN
