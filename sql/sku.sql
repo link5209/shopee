@@ -6,6 +6,7 @@ CREATE TABLE sku (
     stock       int            NOT NULL,
     price       decimal(10, 2) NOT NULL,
     sales       int            NOT NULL,
+    revenue     decimal(10,2)  NOT NULL,
     status      product_status NOT NULL,
     create_time timestamptz    NOT NULL,
     update_time timestamptz    NOT NULL DEFAULT now(),
@@ -19,6 +20,7 @@ COMMENT ON COLUMN sku.name IS 'eg:紅色,S';
 COMMENT ON COLUMN sku.stock IS '当前库存数量';
 COMMENT ON COLUMN sku.price IS '当前折后售价(该国货币)';
 COMMENT ON COLUMN sku.sales IS '累计总销量';
+COMMENT ON COLUMN sku.revenue IS '累计销售额';
 COMMENT ON COLUMN sku.status IS 'available-已上架，unavailable-已下架，empty-已售罄';
 COMMENT ON COLUMN sku.create_time IS '该条记录创建时间';
 COMMENT ON COLUMN sku.update_time IS '该条记录更新时间';
